@@ -3,38 +3,39 @@ from openai import OpenAI
 import os
 import json
 from dotenv import load_dotenv
-from typing import Callable
 
 load_dotenv()
-
 client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
-'''
-Use LangChain to handle the conversation dynamically 
-'''
 
 class CustomAgent():
     def __init__(self, question_prompt):
         self.question_prompt = question_prompt
+        self.file_path = './building_blocks/data.json'
         self.questions = self._load_questions()
-        self.conversations = {} # dictionary mapping questions to responsees
-        #self.question_idx = 0
+        self.conversations = {} # dictionary mapping responses to questions
 
     def _load_questions(self):
-        with open('./building_blocks/data.json', 'r') as file:
+        with open(self.file_path, 'r') as file:
             questions = json.load(file)["questions"]
         return questions
 
     def get_question(self, question_idx):
-        # no more questions
         if question_idx < len(self.questions):
             question = self.questions[question_idx]
         else:
+            # no more questions
             return -1
         return question
 
     # define value response function
     def get_response(self, question, response):
-        prompt = f"Extract the key word answer from the text provided for the question.\n Question: {question}\n Text: {response}\n. "
+        prompt = f"""
+            Extract and return the key word answer from the text provided for the question.\n
+            Here is an example what you should do --> Example Question: 'what is your name?' Example Text: 'My name is Star Zhang, it spells like S T A R Z H A N G'. Example Return: 'Star Zhang' \n
+            Here are the actual question and text following -->
+            Actual Question: {question}\n 
+            Actual Text: {response}\n. 
+            """
         result = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
@@ -47,13 +48,12 @@ class CustomAgent():
         return result_text
 
     def add_record(self):
-        file_path = './building_blocks/data.json'
-        with open(file_path, 'r') as file:
+        with open(self.file_path, 'r') as file:
             data = json.load(file)
     
         data["records"].append(self.conversations)
 
-        with open(file_path, 'w') as json_file:
+        with open(self.file_path, 'w') as json_file:
             json.dump(data, json_file, indent=4)
         
 
