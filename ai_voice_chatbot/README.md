@@ -20,7 +20,7 @@ FYI: You can modify the question list to customize it for your own.
 4. Open a new terminal, run *ngrok http 5000*
     - URL: Copy the forwarding address and add */answer* to the end of the address, example: *https://5ad3-68-129-210-90.ngrok-free.app/answer*
     - Copy the URL above to the URL textbox of the *A call comes in* section on website https://console.twilio.com/us1/develop/phone-numbers/manage/incoming/, and save
-5. Call the twilio provided number and enjoy your time! You can check the logs of the program during and after the call in the terminal used in step 2.
+5. Call the twilio provided number and enjoy your time! You can check the logs of the program during and after the call in the *app.log* file.
 
 ## Section 3: Try out the product without 
 6. If To try out Star Zhang's Twilio number (855) 778-1299
