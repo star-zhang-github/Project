@@ -4,7 +4,7 @@ from twilio.rest import Client
 import os
 from dotenv import load_dotenv
 from langchain_core.prompts import ChatPromptTemplate
-import llm
+import building_blocks.custom_agent as custom_agent
 import time
 
 
@@ -26,7 +26,7 @@ question_prompt = ChatPromptTemplate.from_messages([
     ("ai", "{question}")
     ])
 
-custom_agent = llm.CustomAgent(question_prompt=question_prompt)
+custom_agent = custom_agent.CustomAgent(question_prompt=question_prompt)
 questions = custom_agent.questions
 current_question = None
 question_idx = 0

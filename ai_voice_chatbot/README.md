@@ -10,5 +10,7 @@ The final output of all the answers to the list of predefined questions and the 
 2. Run in terminal *python .\building_blocks\run.py*
 3. Open a new terminal, run *ngrok http 5000*
     - URL: Copy the forwarding address and add */answer* to the end of the address, example: *https://5ad3-68-129-210-90.ngrok-free.app/answer*
-    - Copy the URL above to the URL textbox of the *A call comes in* section, and save
+    - Copy the URL above to the URL textbox of the *A call comes in* section on website https://console.twilio.com/us1/develop/phone-numbers/manage/incoming/, and save
 4. Call the twilio provided number and enjoy your time! You can check the logs of the program during and after the call in the terminal used in step 2.
+5. To try out Star Zhang's Twilio number (855) 778-1299
+ please contact first to add your phone number to the incoming call permission list.
