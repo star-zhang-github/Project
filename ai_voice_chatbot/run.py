@@ -1,27 +1,26 @@
 from flask import Flask, request, redirect, url_for, session
 from twilio.twiml.voice_response import VoiceResponse
-from twilio.rest import Client
+# from twilio.rest import Client
 import os
 from dotenv import load_dotenv
 from langchain_core.prompts import ChatPromptTemplate
 import building_blocks.custom_agent as custom_agent
 from building_blocks.speech_to_text import STT
 import logging
+import time
 
 
 logging.basicConfig(filename='app.log', filemode='a', level=logging.INFO)
 
 load_dotenv()
 app = Flask(__name__)
-
-app.secret_key = os.getenv("FLASK_SECRET_KEY")
+app.secret_key = os.getenv('FLASK_SECRET_KEY')
 account_sid = os.getenv("TWILIO_ACCOUNT_SID")
 auth_token = os.getenv("TWILIO_AUTH_TOKEN")
 
-
-# Initialize Twilio client
-client = Client(account_sid, auth_token)
-
+recording_sid, recording_status, recording_url = None, None, None
+transcription = None
+new_voice_flag = None
 
 # define the prompt templates for asking questions and initialize the custom_agent
 question_prompt = ChatPromptTemplate.from_messages([
@@ -29,17 +28,11 @@ question_prompt = ChatPromptTemplate.from_messages([
     ("ai", "{question}")
     ])
 custom_agent = custom_agent.CustomAgent(question_prompt=question_prompt, question_type="doctor_appointment")
-# questions = custom_agent.questions
 
 @app.before_request
 def initialize_session():
     if 'question_idx' not in session:
         session['question_idx'] = 0
-        # session['current_question'] = None
-        session['translation'] = None
-        session['format_translation'] = None
-# question_idx = 0
-# finished_asked_idx = -1
 
 @app.route("/answer", methods=['GET','POST'])
 def answer_call():
@@ -50,9 +43,9 @@ def answer_call():
     logging.info("Entering answer_call(): Call received")
 
     response = VoiceResponse()
-    # response.say("Welcome to booking your doctor appointment. Please note that to deliver high quality automated service, you might have to wait a few seconds for the AI call assistant to respond.")
     
-    response.say("Welcome")
+    
+    response.say("Welcome. You can press # sign when finish recording. Your information will only be stored when all questions are answered.")
     response.redirect(url_for('ask_question', _external=True))
 
     logging.info("answer_call(): redirected to ask_question()")
@@ -69,20 +62,22 @@ def ask_question():
     current_question = custom_agent.get_question(question_idx)
     logging.info(f"ask_question(): question_idx --> '{question_idx}'")
 
-    # if request.args.get('Retry') == 'true':
-
-    #     logging.info(f"ask_question(): request.args.get('Retry') == 'true'")
-
-    #     response.say("Sorry, I didn't quite get that. Let's try again.")
-    #     response.pause(length=1)
+    if request.args.get('Retry') == 'true':
+        response.say("Sorry, your answer doesn't seem right. Let's try again.")
 
     if current_question != -1:
-        response.say(current_question) 
-        # finished_asked_idx = question_idx
-        # response.pause(length=1)
 
         logging.info(f"ask_question(): started recording for '{current_question}'")
-        response.record(max_length=10, action="/handle-recording", finishOnKey="#", method="POST", recording_status_callback='/recording-status')
+        
+        response.say(current_question)
+        response.record(max_length=10, 
+                        action = url_for("wait", _external=True),
+                        method="POST", 
+                        finishOnKey="#", 
+                        recording_status_callback='/recording-status', 
+                        recordingStatusCallbackMethod="POST", 
+                        recordingStatusCallbackEvent="completed")
+
         logging.info(f"ask_question(): finished recording for '{current_question}'")
     else:
         logging.info(f"ask_question(): custom_agent.conversations --> '{custom_agent.conversations}'")
@@ -92,52 +87,73 @@ def ask_question():
 
     return str(response)
 
-@app.route("/handle-recording", methods=['POST'])
-def handle_recording():
-    global question_idx
+@app.route("/recording-status", methods=['GET','POST'])
+def recording_status():
+    global recording_sid, recording_status, recording_url
+    recording_sid = request.form.get("RecordingSid")
+    recording_status = request.form.get("RecordingStatus")
+    recording_url = request.form.get('RecordingUrl')
+
+    logging.info(f"recording_status(): Recording SID --> {recording_sid}, Status --> {recording_status}")
+    return "Recording finished", 200
+
+
+@app.route("/wait", methods=['POST','GET'])
+def wait():
+    response = VoiceResponse()
+    time.sleep(1)
+    response.redirect(url_for('recording_received', _external=True))
+    return str(response)
+
+
+@app.route("/recording-received", methods=['GET','POST'])
+def recording_received():
+    global recording_sid, recording_status, recording_url
 
     response = VoiceResponse()
-    recording_url = request.form["RecordingUrl"]
+    while recording_status!="completed":
+        response.redirect(url_for('wait', _external=True))
+        return str(response)
+    logging.info(f"recording-received(): recording_status: {recording_status}")
+    logging.info(f"recording-received(): recording_url --> {recording_url}")
+    
+    recording_status = None # reset recording status for next question
+    response.redirect(url_for('transcribe_response', _external=True))
+    return str(response)
 
-    if not recording_url:
-        return "No recording URL provided", 400
-    # Play back the recordingd
-    # response.say("Thank you for your message. Here is what you said.")
-    logging.info(f"handle_recording(): recording_url --> {recording_url}")
+@app.route("/transcribe-response", methods=['GET','POST'])
+def transcribe_response():
+    global transcription
+
+    response = VoiceResponse()
     stt = STT(url=recording_url)
-    translation = stt.translate_audio()
-    session['translation'] = translation
-    response.redirect(url_for('format_response'))
+    transcription = stt.transcribe_audio()
+    logging.info(f"transcribe_response(): transcription--> {transcription}")
+    response.redirect(url_for('format_response', _external=True))
 
     return str(response)
 
 @app.route("/format-response", methods=['POST','GET'])
 def format_response():
+    global transcription
     question_idx = session.get('question_idx', 0)
     format = custom_agent.get_format(question_idx)
     current_question = custom_agent.get_question(question_idx)
-    translation = session['translation']
-    format_translation = custom_agent.get_response(current_question, translation, format)
-    custom_agent.conversations[current_question] = format_translation
+    format_transcription = custom_agent.get_response(current_question, transcription, format)
+    print(f"Question: {current_question}")
+    print(f"Your answer: {transcription}")
+    print(f"Stored answer: {format_transcription}")
 
-    logging.info(f"format_response(): translation --> {translation} ")
-    logging.info(f"format_response(): format_translation --> {format_translation}")
-    session['question_idx'] = question_idx + 1
-    session['format_translation'] = format_translation
+    logging.info(f"format_response(): format_transcription --> {format_transcription}")
 
     response = VoiceResponse()
-    response.redirect(url_for('ask_question'))
+    if "False" in format_transcription:
+        response.redirect(url_for('ask_question', _external=True, Retry='true'))
+    else:
+        custom_agent.conversations[current_question] = format_transcription
+        session['question_idx'] = question_idx + 1
+        response.redirect(url_for('ask_question', _external=True))
     return str(response)
-
-
-# Optional: Endpoint to handle recording status
-@app.route("/recording-status", methods=['POST'])
-def recording_status():
-    recording_sid = request.form.get("RecordingSid")
-    recording_status = request.form.get("RecordingStatus")
-    logging.info(f"Recording SID: {recording_sid}, Status: {recording_status}")
-    return ("", 204)
-
 
 @app.route("/")
 def home():

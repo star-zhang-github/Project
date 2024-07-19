@@ -2,22 +2,23 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import os
 import requests
-from twilio.rest import Client
 
-load_dotenv()
-account_sid = os.getenv("TWILIO_ACCOUNT_SID")
-auth_token = os.getenv("TWILIO_AUTH_TOKEN")
-client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 
 class STT():
-    def __init__(self, url, local_filename=None):
+
+    load_dotenv()
+    account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+    auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+    client = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
+
+    def __init__(self, url, local_filename="./audio_recording/temp_audio.mpeg"):
         self.url = url+".mp3"
-        self.local_filename = local_filename or "./audio_recording/temp_audio.mpeg"
+        self.local_filename = local_filename
+
 
     def download_audio(self):
-
         try:
-            response = requests.get(self.url, stream=True, auth=(account_sid, auth_token))
+            response = requests.get(self.url, stream=True, auth=(STT.account_sid, STT.auth_token))
         except requests.exceptions.RequestException as e:
             print(f"Failed to download audio file: {e}")
             raise
@@ -35,20 +36,15 @@ class STT():
             raise
 
 
-        return self.local_filename
-
-
-    def translate_audio(self):
+    def transcribe_audio(self):
         
-        if not os.path.exists(self.local_filename):
-            self.download_audio()
+        self.download_audio()
         with open(self.local_filename, "rb") as audio_file:
-            translation = client.audio.transcriptions.create(
+            transcription = STT.client.audio.transcriptions.create(
             model="whisper-1", 
             file=audio_file,
             language="en",
             response_format='text',
             temperature = 0.8
             )
-        return translation
-
+        return transcription

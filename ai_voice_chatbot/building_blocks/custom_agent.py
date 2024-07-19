@@ -39,12 +39,13 @@ class CustomAgent():
     # define value response function
     def get_response(self, question, response, format):
         prompt = f"""
-            From the text provided for the question, extract and return answer in given format format.\n
+            From the text provided for the question, extract and return answer in given format format.
+            If the text provided does not contain the information about the question, return False
             Example:
                 Question: 'what is your name?' 
-                Text: 'My name is Charlie'
+                Text: 'My name is Charlie Brown'
                 Example format: 'a string for name'
-                Return: 'Star Zhang'
+                Return: 'Charlie Brown'
             Actual:
                 Question: {question}
                 Text: {response}
@@ -58,7 +59,6 @@ class CustomAgent():
             ]
         )
         result_text = result.choices[0].message.content
-        print(f"result_text: {result_text}")
         return result_text
 
     def add_record(self):
@@ -71,17 +71,17 @@ class CustomAgent():
             json.dump(data, json_file, indent=4)
         
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    #define the prompt templates for asking questions
-    question_prompt = ChatPromptTemplate.from_messages([
-        ("system", "You are a chatbot acting as a call center to receive patient calls for doctor appointment"),
-        ("ai", "{question}")
-        ])
-    custom_agent = CustomAgent(question_prompt=question_prompt)
-    conversations = custom_agent.run_agent()
-    for question, response in conversations.items():
-        print(f"Question: {question} \n")
-        print(f"Response: {response} \n")
+#     #define the prompt templates for asking questions
+#     question_prompt = ChatPromptTemplate.from_messages([
+#         ("system", "You are a chatbot acting as a call center to receive patient calls for doctor appointment"),
+#         ("ai", "{question}")
+#         ])
+#     custom_agent = CustomAgent(question_prompt=question_prompt)
+#     conversations = custom_agent.run_agent()
+#     for question, response in conversations.items():
+#         print(f"Question: {question} \n")
+#         print(f"Response: {response} \n")
 
 
