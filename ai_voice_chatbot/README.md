@@ -16,6 +16,7 @@ FYI: You can modify the question list to customize it for your own.
     - ngrok_token_key
     - TWILIO_ACCOUNT_SID
     - TWILIO_AUTH_TOKEN
+    - FLASK_SECRET_KEY
 3. Run in terminal *python run.py*
 4. Open a new terminal, run *ngrok http 5000*
     - URL: Copy the forwarding address and add */answer* to the end of the address, example: *https://5ad3-68-129-210-90.ngrok-free.app/answer*
