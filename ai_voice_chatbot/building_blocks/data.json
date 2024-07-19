@@ -11,11 +11,11 @@
             },
             {
                 "question": "What is your insurance payer name?",
-                "format": "a string for name"
+                "format": "name"
             },
             {
                 "question": "What is your insurance ID",
-                "format": "a string with a list of numbers"
+                "format": "numbers"
             },
             {
                 "question": "Are you referred by a physician? If so, what is the name of the physicians?",
@@ -27,11 +27,11 @@
             },
             {
                 "question": "What is your address",
-                "format": "string"
+                "format": "mix of numbers and string"
             },
             {
                 "question": "What is your phone number?",
-                "format": "string of a list of integers"
+                "format": "a list of integers"
             }
         ]
     },

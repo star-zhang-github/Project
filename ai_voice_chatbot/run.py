@@ -51,7 +51,6 @@ def answer_call():
 
 @app.route("/ask-question", methods=['GET', 'POST'])
 def ask_question():
-    # global current_question, question_idx
 
     logging.info(f"Entering ask_question()")
     response = VoiceResponse()
@@ -144,7 +143,7 @@ def format_response():
     logging.info(f"format_response(): format_transcription --> {format_transcription}")
 
     response = VoiceResponse()
-    if "False" in format_transcription:
+    if not format_transcription:
         response.redirect(url_for('ask_question', _external=True, Retry='true'))
     else:
         custom_agent.conversations[current_question] = format_transcription
