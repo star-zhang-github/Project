@@ -1,15 +1,24 @@
 {
-    "questions": 
-                [
-                "What is your name?",
-                "What is your date of birth?",
-                "What is your insurance payer name?",
-                "What is your insurance ID",
-                "Are you referred by a physician? If so, what is the name of the physicians?",
-                "What is the reason of visit today?",
-                "What is your address",
-                "What is your phone number?"
-                ],
-    "records":[
+    "questions_list": {
+        "doctor_appointment": [
+            {
+                "question": "What is your name?",
+                "format": "a string for name"
+            },
+            {
+                "question": "What is your date of birth?",
+                "format": "a string with Month, day, year"
+            },
+            {
+                "question": "What is your insurance payer name?",
+                "format": "a string for name"
+            },
+            {
+                "question": "What is your insurance ID",
+                "format": "a string for a series of numbers"
+            }
+        ]
+    },
+    "records": [
     ]
-}   
+}
