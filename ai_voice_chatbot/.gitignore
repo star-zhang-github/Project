@@ -1,2 +1,9 @@
-# .gitignore
+# Environment
 .env
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# logs for the running the programs
+app.log
