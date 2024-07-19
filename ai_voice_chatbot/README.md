@@ -1,7 +1,7 @@
 # AI_VOICE_CHATBOT
 ## Section 1: Summary: The AI voice chatbot that collects information on your behalf
 This is a voice chatbot I built using OpenAI llm and twilio APIs.
-The chatbot allows you to call a twilio provided number. During the call, the AI chatbot will ask you a lsit of questions from *building_blocks/data.json*, for each question you will have 15 seconds to respond. If you didn't respond to the question, the chatbot will repeat the question and allow you to record again. 
+The chatbot allows you to call a twilio provided number. During the call, the AI chatbot will ask you a list of questions from *building_blocks/data.json*, for each question you will have 15 seconds to respond. If you didn't respond to the question, the chatbot will repeat the question and allow you to record again. 
 
 After recording each question, the program will transcribe the recording to transcript and extract out the keyword of the transcript for the question asked.
 
@@ -22,6 +22,6 @@ FYI: You can modify the question list to customize it for your own.
     - Copy the URL above to the URL textbox of the *A call comes in* section on website https://console.twilio.com/us1/develop/phone-numbers/manage/incoming/, and save
 5. Call the twilio provided number and enjoy your time! You can check the logs of the program during and after the call in the *app.log* file.
 
-## Section 3: Try out the product without 
+## Section 3: Try out the product without setting up
 6. If To try out Star Zhang's Twilio number (855) 778-1299
  please contact first to add your phone number to the incoming call permission list.
