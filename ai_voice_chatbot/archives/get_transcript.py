@@ -18,12 +18,11 @@ def user_response_transcript(account_sid, auth_token):
 
     if response.status_code == 200:
         transcription_json = response.json()
-        print(f"response.status_code 200")
 
     transcription = transcription_json['transcriptions'][0]
+    status = transcription['status']
     user_response = transcription['transcription_text']
-    print(f"transcript processed")
-    return user_response
+    return status, user_response
 
 
 #print(user_response_transcript(account_sid, auth_token))
