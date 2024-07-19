@@ -36,9 +36,6 @@ def initialize_session():
 
 @app.route("/answer", methods=['GET','POST'])
 def answer_call():
-    # global question_idx
-    # question_idx = 0
-    # finished_asked_idx = -1
 
     logging.info("Entering answer_call(): Call received")
 
